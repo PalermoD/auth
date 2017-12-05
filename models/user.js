@@ -11,17 +11,17 @@ const userSchema = new Schema({
 //on save hook, encrypt password
 //before saving model, run this function
 userSchema.pre('save', function(next){
-    console.log('what up')
+
     //get access to user model
     const user = this
     //generate a salt then run callback
     bcrypt.genSalt(10, function(err, salt){
-        console.log('its going')
+
         if(err) {return next(err)}
 
         //hash (encrypt) our password using the salt
         bcrypt.hash(user.password, salt, null, function(err, hash){
-            console.log('here')
+
             if(err) { return next(err)}
 
             //overwrite plain text plain password with encrypted password
@@ -30,6 +30,14 @@ userSchema.pre('save', function(next){
         })
     })
 })
+
+userSchema.methods.comparePassword = function(candidatePassword, callback) {
+    bcrypt.compare(candidatePassword, this.password, function(err, isMatch){
+        if(err) {return callback(err)}
+
+        callback(null, isMatch)
+    })
+}
 
 //create the model class
 const ModelClass = mongoose.model('user', userSchema);
